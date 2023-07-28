@@ -13,6 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static com.security.springboot.SpringSecurityBoot.security.ApplicationUserRole.ADMIN;
+import static com.security.springboot.SpringSecurityBoot.security.ApplicationUserRole.STUDENT;
+
 @Configuration
 @EnableWebSecurity
  public class ApplicationSecurityConfig {
@@ -25,8 +28,13 @@ import org.springframework.security.web.SecurityFilterChain;
     SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
 
         http.authorizeHttpRequests((authorize)->{
-            authorize.anyRequest().authenticated();
-        }).httpBasic(Customizer.withDefaults());
+            authorize.
+                    requestMatchers("/","index","/css/*","/js/*").permitAll()
+                    .requestMatchers("/api/**").hasRole(STUDENT.name())
+                    .anyRequest()
+                    .authenticated();
+        }).httpBasic(Customizer
+                .withDefaults());
         return http.build();
     }
 
@@ -36,10 +44,18 @@ import org.springframework.security.web.SecurityFilterChain;
         UserDetails madhav = User.builder()
                 .username("madhavaman")
                 .password(passwordEncoder.encode("password"))
-                .roles("STUDENT")
+                .roles(STUDENT.name())
                 .build();
+
+        UserDetails linda = User.builder()
+                .username("lindaketh")
+                .password(passwordEncoder.encode("password123"))
+                .roles(ADMIN.name())
+                .build();
+
         return new InMemoryUserDetailsManager(
-                madhav
+                madhav,
+                linda
         );
     }
 
